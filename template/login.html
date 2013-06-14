@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block title %}Login{% end %}
+
+{% block content %}
+	<div class="container">
+		<form class="form-horizontal" action="/login" method="POST">
+			<legend>Please login</legend>
+			<div class="control-group">
+				<label class="control-label" for="username">Username</label>
+				<div class="controls">
+					<input type="text" id="username" name="username" placeholder="Username">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="password">Password</label>
+				<div class="controls">
+					<input type="password" id="password" name="password" placeholder="Password">
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<button type="submit" class="btn btn-primary">Sign in</button>
+					<a href="/signup" class="btn">Create Account</a>
+				</div>
+			</div>
+		</form>
+	</div>
+{% end %}

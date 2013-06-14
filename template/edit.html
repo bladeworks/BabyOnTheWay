@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+
+{% block title %}Add/Edit Indicator{% end %}
+
+{% block content %}
+	<div class="container">
+		<form class="form-horizontal" id="editform" method="POST">
+			<legend>Add/Edit record</legend>
+			<input type="hidden" id="id" name="id" value="{{ indicator.get('id', '') }}">
+			<div class="control-group">
+				<label class="control-label" for="date">日期</label>
+				<div class="controls">
+					<input type="text" id="date" name="date" value="{{ indicator.get('date', datetime.date.today().isoformat()) }}">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="morning_temp">早上体温</label>
+				<div class="controls">
+					<div class="input-append">
+						<input type="text" id="morning_temp" name="morning_temp" value="{{ indicator.get('morning_temp', '') }}">
+						<span class="add-on">℃</span>
+					</div>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="night_temp">晚上体温</label>
+				<div class="controls">
+					<div class="input-append">
+						<input type="text" id="night_temp" name="night_temp" value="{{ indicator.get('night_temp', '') }}">
+						<span class="add-on">℃</span>
+					</div>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="morning_weight">早上体重</label>
+				<div class="controls">
+					<div class="input-append">
+						<input type="text" name="morning_weight" value="{{ indicator.get('morning_weight', '') }}">
+						<span class="add-on">kg</span>
+					</div>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="night_weight">晚上体重</label>
+				<div class="controls">
+					<div class="input-append">
+						<input type="text" id="night_weight" name="night_weight" value="{{ indicator.get('night_weight', '') }}">
+						<span class="add-on">kg</span>
+					</div>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="note">备注</label>
+				<div class="controls">
+					<textarea rows="3" id="note" name="note">{{ indicator.get('note', '') }}</textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<input type="hidden" value="0" name="period_start">
+					<label class="checkbox"℃>
+						<input type="checkbox" value="1" name="period_start" {% if indicator.get('period_start', 0) %}checked{% end %}>
+						是否为周期第一天
+					</label>
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<button type="submit" class="btn btn-primary">Save</button>
+					<a href="/" class="btn">Cancel</a>
+				</div>
+			</div>
+		</form>
+	</div>
+{% end %}
+
+{% block myjs %}
+	<script src="{{static_url("js/jquery.validate.min.js")}}"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#editform").validate({
+				rules: {
+					date: {
+						required: true,
+						dateISO: true
+					},
+					morning_temp: {
+						number: true,
+						range: [35, 42]
+					},
+					night_temp: {
+						number: true,
+						range: [35, 42]
+					},
+					morning_weight: {
+						number: true,
+						range: [0, 400]
+					},
+					night_weight: {
+						number: true,
+						range: [0, 400]
+					},
+				},
+				messages: {
+					date: {
+						required: "Enter date",
+						dateISO: "Incorrect date"
+					},
+					morning_temp: {
+						number: "It should be a number",
+						range: "Are you sure?"
+					},
+					night_temp: {
+						number: "It should be a number",
+						range: "Are you sure?"
+					},
+					morning_weight: {
+						number: "It should be a number",
+						range: "Are you sure?"
+					},
+					night_weight: {
+						number: "It should be a number",
+						range: "Are you sure?"
+					},
+				},
+				errorClass: "help-inline",
+				errorElement: "label",
+				highlight: function(element, errorClass, validClass) {
+					$(element).parents('.control-group').addClass('error');
+				},
+				unhighlight: function(element, errorClass, validClass) {
+					$(element).parents('.control-group').removeClass('error');
+					$(element).parents('.control-group').addClass('success');
+				},
+				errorPlacement: function (error, element) {
+				   if (element.parent().is('.input-append'))
+				      error.appendTo(element.parents(".controls:first"));
+				   else
+				      error.insertAfter(element);
+				}
+			});
+		});
+	</script>
+{% end %}

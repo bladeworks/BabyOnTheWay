@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}Welcome{% end %}
+
+{% block content %}
+	<div class="container">
+		<table class="table table-striped"
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>日期</th>
+					<th>早晨体温</th>
+					<th>晚上体温</th>
+					<th>早晨体重</th>
+					<th>晚上体重</th>
+					<th></th>
+			</thead>
+			<tbody>
+				{% for idx, indicator in enumerate(indicators) %}
+					<tr>
+						<td>{{ idx + 1 }}</td>	
+						<td>{{ indicator['date'] }}</td>	
+						<td>{{ indicator['morning_temp'] }}</td>	
+						<td>{{ indicator['night_temp'] }}</td>	
+						<td>{{ indicator['morning_weight'] }}</td>	
+						<td>{{ indicator['night_weight'] }}</td>
+						<td>
+							<a href="/edit/{{ indicator['id'] }}" class="btn"><i class="icon-edit"></i></a>
+							<a href="#" onclick="bootbox.confirm('Are you sure?', function(result) {
+								if (result == true) {
+									window.location = '/delete/{{ indicator['id'] }}';
+								}
+							}); return false" class="btn"><i class="icon-remove"></i></a>
+						</td>	
+					</tr>
+				{% end %}
+			</tbody>
+		</table>
+	</div>
+{% end %}
