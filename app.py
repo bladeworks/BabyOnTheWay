@@ -74,7 +74,7 @@ class MainHandler(BaseHandler):
         res = db_query_one(sql, [1, self.current_user])
         indicators = []
         if res:
-            sql = "select * from indicator where date >= ? and username = ? order by date asc"
+            sql = "select * from indicator where date >= ? and username = ? order by date desc"
             indicators = db_query(sql, [res["date"], self.current_user])
         self.render("index.html", indicators=indicators)
 

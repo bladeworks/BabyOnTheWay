@@ -16,9 +16,10 @@
 					<th></th>
 			</thead>
 			<tbody>
-				{% for idx, indicator in enumerate(indicators) %}
+				{% set idx = len(indicators) %}
+				{% for indicator in indicators %}
 					<tr>
-						<td>{{ idx + 1 }}</td>	
+						<td>{{ idx }}</td>	
 						<td>{{ indicator['date'] }}</td>	
 						<td>{{ indicator['morning_temp'] }}</td>	
 						<td>{{ indicator['night_temp'] }}</td>	
@@ -33,6 +34,7 @@
 							}); return false" class="btn"><i class="icon-remove"></i></a>
 						</td>	
 					</tr>
+					{% set idx = idx - 1 %}
 				{% end %}
 			</tbody>
 		</table>
