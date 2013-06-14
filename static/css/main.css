@@ -1,11 +1,14 @@
 html, body {
 	height: 100%;
 }
+.main_content {
+	padding-top: 40px;
+}
 .wrap {
 	min-height: 100%;
 	height: auto !important;
 	height: 100%;
-	margin: 0 auto -40px;
+	margin-bottom: -40px;
 }
 #push, #footer {
 	height: 40px;

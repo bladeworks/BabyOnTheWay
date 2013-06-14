@@ -15,7 +15,7 @@ def init_database():
     db_execute("""
         create table if not exists indicator
         (id integer primary key, username text not null, date text not null, morning_temp real, night_temp real,
-         morning_weight real, night_weight, real, note text, period_start int) """)
+         morning_weight real, night_weight real, note text, period_start int) """)
 
 
 def db_execute(sql, params=[]):
