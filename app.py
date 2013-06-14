@@ -142,5 +142,5 @@ if __name__ == '__main__':
     parse_command_line()
     logging.getLogger().setLevel(logging.DEBUG)
     init_database()
-    app.listen(8888)
+    app.listen(8888, "0.0.0.0")
     tornado.ioloop.IOLoop.instance().start()
