@@ -11,10 +11,10 @@ dbStorage = os.path.join(os.path.dirname(__file__), "db.dat")
 def init_database():
     db_execute("""
         create table if not exists user
-        (id integer primary key, username text not null unique, password text not null, email text) """)
+        (id integer primary key, username text not null unique, password text not null, email text, event_map text) """)
     db_execute("""
         create table if not exists indicator
-        (id integer primary key, username text not null, date text not null, morning_temp real, night_temp real,
+        (id integer primary key, username text not null, date text not null unique, morning_temp real, night_temp real,
          morning_weight real, night_weight real, note text, period_start int, event text) """)
 
 

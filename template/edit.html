@@ -50,12 +50,6 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="event">事件</label>
-				<div class="controls">
-					<input type="text" id="event" name="event" value="{{ indicator.get('event', '') }}">
-				</div>
-			</div>
-			<div class="control-group">
 				<label class="control-label" for="note">备注</label>
 				<div class="controls">
 					<textarea rows="3" id="note" name="note">{{ indicator.get('note', '') }}</textarea>
@@ -70,6 +64,21 @@
 					</label>
 				</div>
 			</div>
+			{% for i in range(1, 4) %}
+			<div class="control-group">
+				<div class="controls">
+					<input type="hidden" value="0" name="event{{ i }}">
+					<label class="checkbox"℃>
+						<input type="checkbox" value="1" name="event{{ i }}" {% if indicator.get('event%s' % i, 0) %}checked{% end %}>
+						{% if event_map[i - 1] %}
+							{{ event_map[i-1] }}
+						{% else %}
+							Event {{ i }}
+						{% end %}
+					</label>
+				</div>
+			</div>
+			{% end %}
 			<div class="control-group">
 				<div class="controls">
 					<button type="submit" class="btn btn-primary">Save</button>

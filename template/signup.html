@@ -4,29 +4,59 @@
 
 {% block content %}
 	<div class="container">
-		<form class="form-horizontal" id="signupform" action="/signup" method="POST">
-			<legend>Registration</legend>
+		<form class="form-horizontal" id="signupform" method="POST">
+			{% if user %}
+				<legend>Preference</legend>
+			{% else %}
+				<legend>Registration</legend>
+			{% end %}
+			{% if user %}
+				<input type="hidden" id="username" name="username" value="{{ user["username"] }}">
+			{% else %}
+				<div class="control-group">
+					<label class="control-label" for="username">Username</label>
+					<div class="controls">
+						<input type="text" id="username" name="username" placeholder="Username">
+					</div>
+				</div>
+			{% end %}
+			{% if not user %}
+				<div class="control-group">
+					<label class="control-label" for="password">Password</label>
+					<div class="controls">
+						<input type="password" id="password" name="password" placeholder="Password">
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="cpassword">Password Again</label>
+					<div class="controls">
+						<input type="password" id="cpassword" name="cpassword" placeholder="Repeat the above password">
+					</div>
+				</div>
+			{% end %}
 			<div class="control-group">
-				<label class="control-label" for="username">Username</label>
+				<label class="control-label" for="email">Email</label>
 				<div class="controls">
-					<input type="text" id="username" name="username" placeholder="Username">
+					<input type="text" id="email" name="email" placeholder="Email" value="{{ user.get('email', '') }}">
 				</div>
 			</div>
-			<div class="control-group">
-				<label class="control-label" for="password">Password</label>
-				<div class="controls">
-					<input type="password" id="password" name="password" placeholder="Password">
+			{% for i in range(1, 4) %}
+				<div class="control-group">
+					<label class="control-label" for="event{{ i }}">Event {{ i }}</label>
+					<div class="controls">
+						<input type="text" id="event{{ i }}" name="event{{ i }}" placeholder="Event {{ i }}" value="{{ user.get('event%s' % i, '') }}">
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="cpassword">Password Again</label>
-				<div class="controls">
-					<input type="password" id="cpassword" name="cpassword" placeholder="Repeat the above password">
-				</div>
-			</div>
+			{% end %}
 			<div class="control-group">
 				<div class="controls">
-					<button type="submit" class="btn">Create my account</button>
+					<button type="submit" class="btn">
+						{% if user %}
+							Save
+						{% else %}
+							Create my account
+						{% end %}
+					</button>
 				</div>
 			</div>
 		</form>
@@ -41,7 +71,8 @@
 				rules: {
 					username: "required",
 					password: {required: true, minlength: 6},
-					cpassword: {required: true, equalTo: "#password"}
+					cpassword: {required: true, equalTo: "#password"},
+					email: "email"
 				},
 				messages: {
 					username: "Enter username",
@@ -52,7 +83,8 @@
 					cpassword: {
 						required: "Enter confirm password",
 						equalTo: "Password and confirm password must match"
-					}
+					},
+					email: "Invalid email address"
 				},
 				errorClass: "help-inline",
 				errorElement: "span",

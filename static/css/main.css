@@ -19,3 +19,15 @@ html, body {
 .credit {
 	margin: 10px 10px 10px 10px;
 }
+.event1 {
+	background-color: red;
+	color: white;
+}
+.event2 {
+	background-color: green;
+	color: white;
+}
+.event3 {
+	background-color: blue;
+	color: white;
+}

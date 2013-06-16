@@ -57,7 +57,13 @@
 				{% for indicator in indicators %}
 					<tr>
 						<td>{{ idx }}</td>	
-						<td>{{ indicator['date'] }}</td>	
+						<td>
+							{% if indicator.get("date_display") %}
+								{% raw indicator['date_display'] %}
+							{% else %}
+								{{ indicator['date'] }}
+							{% end %}
+						</td>	
 						<td>{{ indicator['morning_temp'] }}</td>	
 						<td>{{ indicator['night_temp'] }}</td>	
 						<td>{{ indicator['morning_weight'] }}</td>	
@@ -111,6 +117,8 @@
 				ymax: v_ymax,
 				ymin: v_ymin,
 				lineColors: ["green", "blue"],
+				events: {% raw json_encode(events) %},
+				eventLineColors: ['red', 'green', 'blue'],
 			});
 		}
 	</script>

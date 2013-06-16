@@ -14,6 +14,10 @@ fields = ("date", "username", "morning_temp", "night_temp", "morning_weight", "n
 update_sql = "update indicator set %s where id = :id" % ", ".join(["%s = :%s" % (f, f) for f in fields])
 insert_sql = "insert into indicator(%s) values(%s)" % (", ".join(fields), ", ".join([":%s" % f for f in fields]))
 
+fields_user = ("username", "password", "email", "event_map")
+update_sql_user = "update user set %s where username = :username" % ", ".join(["%s = :%s" % (f, f) for f in [field for field in fields_user if field not in ["username", "password"]]])
+insert_sql_user = "insert into user(%s) values(%s)" % (", ".join(fields_user), ", ".join([":%s" % f for f in fields_user]))
+
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -28,25 +32,49 @@ class BaseHandler(tornado.web.RequestHandler):
         self.clear_cookie('flash_msg_%s' % key)
         return val
 
+    def get_event_map(self):
+        r = db_query_one("select event_map from user where username = ?", [self.current_user])
+        if r:
+            return r['event_map'].split(',')
+
 
 class SignupHandler(BaseHandler):
-    def get(self):
-        self.render("signup.html")
+    def get(self, username=None):
+        if username and username != self.current_user:
+            self.set_flash_message("error", "You are not %s so force to logout!" % username)
+            self.redirect('/logout')
+        user = {}
+        if username:
+            r = db_query_one("select * from user where username = ?", [self.current_user])
+            for f in [k for k in r.keys() if k != 'password']:
+                user[f] = r[f]
+            for idx, v in enumerate(user['event_map'].split(',')):
+                user["event%s" % (idx + 1)] = v
+        self.render("signup.html", user=user)
 
-    def post(self):
-        username = self.get_argument("username")
-        password = self.get_argument("password")
+    def post(self, username=None):
+        user = {}
+        for f in [field for field in fields_user if field != "event_map"]:
+            if username and f == "password":
+                continue
+            user[f] = self.get_argument(f)
+        user["event_map"] = ",".join([self.get_argument("event%s" % i) for i in range(1, 4)])
+        if not username:
+            user["password"] = sha256_crypt.encrypt(user["password"])
         try:
-            db_execute("insert into user(username, password) values(?, ?)", [username, sha256_crypt.encrypt(password)])
+            if username:
+                db_execute(update_sql_user, user)
+            else:
+                db_execute(insert_sql_user, user)
         except Exception as e:
             logging.exception("Got exception while adding user")
             if e.message == "column username is not unique":
-                self.set_flash_message("error", "The user with name %s is existed." % username)
+                self.set_flash_message("error", "The user with name %s is existed." % user["username"])
                 self.redirect('/signup')
             else:
                 raise e
         else:
-            self.set_secure_cookie('user', username)
+            self.set_secure_cookie('user', user["username"])
             self.redirect('/')
 
 
@@ -90,6 +118,7 @@ class MainHandler(BaseHandler):
         y_min_t = 999
         y_max_w = 0
         y_min_w = 999
+        events = []
         if start_list:
             if not start_date:
                 start_date = start_list[-1]
@@ -109,6 +138,18 @@ class MainHandler(BaseHandler):
                 for k in row.keys():
                     if 'temp' in k or 'weight' in k:
                         indicator[k] = float(row[k]) if row[k] else row[k]
+                    elif k == 'event':
+                        if row[k] and row[k] != '000':
+                            date_parts = row['date'].split('-')
+                            date_display_parts = []
+                            for idx, v in enumerate(row[k]):
+                                if v == '1':
+                                    events.append(row['date'])
+                                    date_display_parts.append('<span class="event%s">%s</span>' % ((idx + 1), date_parts[idx]))
+                                else:
+                                    events.append('')
+                                    date_display_parts.append(date_parts[idx])
+                            indicator["date_display"] = "-".join(date_display_parts)
                     else:
                         indicator[k] = row[k]
                 for t in ('morning_temp', 'night_temp'):
@@ -124,10 +165,23 @@ class MainHandler(BaseHandler):
             y_min_t -= 0.1
             y_max_w += 0.2
             y_min_w -= 0.2
+        if events:
+            holder = ""
+            extra = []
+            for e in events[:3]:
+                extra.append(e)
+                if e:
+                    holder = e
+                    break
+            events.extend(extra)
+            for idx, v in enumerate(events):
+                if not v:
+                    events[idx] = holder
         self.render("index.html", indicators=indicators, previous_date=previous_date,
                     next_date=next_date, start_list=start_list, y_max_t=y_max_t,
                     y_min_t=y_min_t, y_max_w=y_max_w, y_min_w=y_min_w,
-                    start_date=start_date)
+                    start_date=start_date, event_map=self.get_event_map(),
+                    events=events)
 
 
 class EditHandler(BaseHandler):
@@ -137,23 +191,40 @@ class EditHandler(BaseHandler):
         if id:
             r = db_query_one("select * from indicator where id = ? and username = ?", [id, self.current_user])
             for f in r.keys():
-                indicator[f] = r[f]
-        self.render("edit.html", indicator=indicator)
+                if f == "event":
+                    for idx, v in enumerate(r[f]):
+                        indicator['event%s' % (idx + 1)] = int(v)
+                else:
+                    indicator[f] = r[f]
+        logging.debug("indicator = %s", indicator)
+        self.render("edit.html", indicator=indicator, event_map=self.get_event_map())
 
     def post(self, id=None):
         indicator = dict()
         for param_name in fields:
             if param_name == "username":
                 indicator[param_name] = self.current_user
+            elif param_name == "event":
+                indicator[param_name] = "".join([self.get_argument('event%s' % i) for i in range(1, 4)])
             else:
                 indicator[param_name] = self.get_argument(param_name)
         logging.debug("indicator = %s", indicator)
         if id:
             indicator["id"] = id
             db_execute(update_sql, indicator)
+            self.redirect("/")
         else:
-            db_execute(insert_sql, indicator)
-        self.redirect("/")
+            try:
+                db_execute(insert_sql, indicator)
+            except Exception as e:
+                logging.exception("Got exception while adding record.")
+                if e.message == "column date is not unique":
+                    self.set_flash_message("error", "The record for %s is existed." % indicator['date'])
+                    self.redirect('/add')
+                else:
+                    raise e
+            else:
+                self.redirect("/")
 
 
 class DeleteHandler(BaseHandler):
@@ -194,6 +265,7 @@ app = tornado.web.Application([
     (r'/edit/(\d+)', EditHandler),
     (r'/delete/(\d+)', DeleteHandler),
     (r'/signup', SignupHandler),
+    (r'/preference/(\w+)', SignupHandler),
     (r'/login', LoginHandler),
     (r'/logout', LogoutHandler),
     (r'/export/(\w+)', ExportHandler),
