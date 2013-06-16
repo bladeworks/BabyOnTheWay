@@ -50,6 +50,12 @@
 				</div>
 			</div>
 			<div class="control-group">
+				<label class="control-label" for="event">事件</label>
+				<div class="controls">
+					<input type="text" id="event" name="event" value="{{ indicator.get('event', '') }}">
+				</div>
+			</div>
+			<div class="control-group">
 				<label class="control-label" for="note">备注</label>
 				<div class="controls">
 					<textarea rows="3" id="note" name="note">{{ indicator.get('note', '') }}</textarea>

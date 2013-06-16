@@ -59,6 +59,8 @@
 						</div>
 					</div>
 				</div>
+			</header>
+			<div class="main_content">
 				{% for key in ('error', 'info', 'success') %}
 					{% set msg = handler.get_flash_message(key) %}
 					{% if msg %}
@@ -68,8 +70,6 @@
 						</div>
 					{% end %}
 				{% end %}
-			</header>
-			<div class="main_content">
 				{% block content %}
 				{% end %}
 			</div>

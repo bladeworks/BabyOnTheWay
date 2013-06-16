@@ -10,7 +10,7 @@ from tornado.options import parse_command_line
 from database import db_execute, db_query, init_database, db_query_one
 from passlib.hash import sha256_crypt
 
-fields = ("date", "username", "morning_temp", "night_temp", "morning_weight", "night_weight", "note", "period_start",)
+fields = ("date", "username", "morning_temp", "night_temp", "morning_weight", "night_weight", "note", "period_start", "event")
 update_sql = "update indicator set %s where id = :id" % ", ".join(["%s = :%s" % (f, f) for f in fields])
 insert_sql = "insert into indicator(%s) values(%s)" % (", ".join(fields), ", ".join([":%s" % f for f in fields]))
 
@@ -36,9 +36,18 @@ class SignupHandler(BaseHandler):
     def post(self):
         username = self.get_argument("username")
         password = self.get_argument("password")
-        db_execute("insert into user(username, password) values(?, ?)", [username, sha256_crypt.encrypt(password)])
-        self.set_secure_cookie('user', username)
-        self.redirect('/')
+        try:
+            db_execute("insert into user(username, password) values(?, ?)", [username, sha256_crypt.encrypt(password)])
+        except Exception as e:
+            logging.exception("Got exception while adding user")
+            if e.message == "column username is not unique":
+                self.set_flash_message("error", "The user with name %s is existed." % username)
+                self.redirect('/signup')
+            else:
+                raise e
+        else:
+            self.set_secure_cookie('user', username)
+            self.redirect('/')
 
 
 class LoginHandler(BaseHandler):
@@ -154,10 +163,25 @@ class DeleteHandler(BaseHandler):
         self.redirect('/')
 
 
+class ExportHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, format="csv"):
+        if format == 'csv':
+            self.set_header('Content-Type', 'text/csv')
+            self.set_header('Content-Disposition', 'attachment; filename=export.csv')
+            self.write(','.join(fields) + '\n')
+            sql = "select %s from indicator where username = ?" % ", ".join(fields)
+            indicators = db_query(sql, [self.current_user])
+            for indicator in indicators:
+                self.write(",".join([str(indicator[f]) for f in fields]) + "\n")
+        else:
+            self.write("Unimplemented export")
+
+
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "template_path": os.path.join(os.path.dirname(__file__), "template"),
-    "cookie_secret": "NOIDFSFFKDFJLJLJ",
+    "cookie_secret": "Bz/WKEQGTh+ge7e4+J0GOpFfjFh1BUlFg/RWKweu7fw=",
     "login_url": "/login",
     "debug": True,
 }
@@ -172,6 +196,7 @@ app = tornado.web.Application([
     (r'/signup', SignupHandler),
     (r'/login', LoginHandler),
     (r'/logout', LogoutHandler),
+    (r'/export/(\w+)', ExportHandler),
 ], **settings)
 
 

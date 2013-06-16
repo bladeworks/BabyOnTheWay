@@ -19,6 +19,7 @@
 	{% if next_date %}
 		<li><a href="/period/{{ next_date }}"><i class="icon-arrow-right icon-white"></i> 下个周期</a></li>
 	{% end %}
+	<li><a href="/export/csv"><i class="icon-download-alt icon-white"></i> 导出数据</a></li>
 	<li><a href="#chart" onclick="show_chart('temp')"><i class="icon-picture icon-white"></i> 体温图</a></li>
 	<li><a href="#chart" onclick="show_chart('weight')"><i class="icon-picture icon-white"></i> 体重图</a></li>
 {% end %}
