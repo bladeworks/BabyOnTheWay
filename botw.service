@@ -1,0 +1,10 @@
+[Unit]
+Description=BabyOnTheWay
+After=netcfg@ethernet-eth0.service
+
+[Service]
+ExecStart=/root/BabyOnTheWay/start.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
