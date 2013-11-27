@@ -54,9 +54,12 @@
 			</thead>
 			<tbody>
 				{% set idx = len(indicators) %}
+				{% set s_date = datetime.datetime.strptime(start_date, '%Y-%m-%d') %}
 				{% for indicator in indicators %}
 					<tr>
-						<td>{{ idx }}</td>	
+					    {% set c_date = datetime.datetime.strptime(indicator['date'], '%Y-%m-%d') %}
+					    {% set seq = (c_date - s_date).days + 1 %}
+						<td>{{ seq }}(WK{{ (seq - 1) / 7 + 1 }}.{{ (seq - 1) % 7 + 1 }})</td>	
 						<td>
 							{% if indicator.get("date_display") %}
 								{% raw indicator['date_display'] %}
